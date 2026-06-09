@@ -2,7 +2,3 @@
 	path = components/LovyanGFX
 	url = https://github.com/lovyan03/LovyanGFX.git
 	tag = 1.2.21
-[submodule "components/lvgl"]
-	path = components/lvgl
-	url = https://github.com/lvgl/lvgl.git
-	tag = v9.5.0
