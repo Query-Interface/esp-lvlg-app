@@ -398,7 +398,8 @@ static void create_footer(lv_obj_t *parent)
     lv_obj_set_height(footerButtons,FOOTER_HEIGHT+20);    
     lv_obj_set_style_radius(footerButtons,0,LV_PART_ITEMS);
     lv_obj_set_style_bg_opa(footerButtons,LV_OPA_TRANSP,LV_PART_ITEMS);
-    lv_obj_add_style(footerButtons, &style_glow,LV_PART_ITEMS | LV_BTNMATRIX_CTRL_CHECKED); // selected
+    lv_obj_add_style(footerButtons, &style_glow,LV_PART_ITEMS); // TODO: add to update to 2 instructions instead of using LV_PART_ITEMS | LV_STATE_CHECKED
+    lv_obj_add_style(footerButtons, &style_glow,LV_STATE_CHECKED);
 
     lv_obj_align(footerButtons, LV_ALIGN_CENTER, 0, 0);
     lv_obj_add_event_cb(footerButtons, footer_button_event_handler, LV_EVENT_ALL, NULL); 
@@ -918,9 +919,9 @@ static void espwifi_event_handler(lv_event_t* e)
     if (code == LV_EVENT_CLICKED)
     {
         bool provisioned = false;
-        ESP_ERROR_CHECK(wifi_prov_mgr_is_provisioned(&provisioned));
+        ESP_ERROR_CHECK(network_prov_mgr_is_wifi_provisioned(&provisioned));
         if (provisioned) {
-            wifi_prov_mgr_reset_provisioning();     // reset wifi
+            network_prov_mgr_reset_wifi_provisioning();     // reset wifi
             
             // Reset device to start provisioning
             lv_label_set_text(lbl_wifi_status, "Wi-Fi Disconnected!");

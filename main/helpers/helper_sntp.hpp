@@ -109,7 +109,7 @@ static void obtain_time(void)
      * see LWIP_DHCP_GET_NTP_SRV menuconfig option
      */
 #ifdef LWIP_DHCP_GET_NTP_SRV
-    sntp_servermode_dhcp(1);
+    esp_sntp_servermode_dhcp(1);
 #endif
 
     initialize_sntp();
@@ -130,11 +130,11 @@ static void obtain_time(void)
 static void initialize_sntp(void)
 {
     ESP_LOGI(TAG, "Initializing SNTP");
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, "pool.ntp.org");
+    esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    esp_sntp_setservername(0, "pool.ntp.org");
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
 #ifdef CONFIG_SNTP_TIME_SYNC_METHOD_SMOOTH
     sntp_set_sync_mode(SNTP_SYNC_MODE_SMOOTH);
 #endif
-    sntp_init();
+    esp_sntp_init();
 }

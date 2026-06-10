@@ -58,12 +58,12 @@ dependencies:
       type: idf
     version: 6.0.1
   lvgl/lvgl:
-    component_hash: b702d642e03e95928046d5c6726558e6444e112420c77efa5fdb6650b0a13c5d
+    component_hash: d7c1ac037ae6e85d94897f807d6e7ba0946a83e720074fc95a4f6241da9f9f53
     dependencies: []
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 9.3.0
+    version: 8.4.0
   ota:
     dependencies: []
     source:
@@ -80,6 +80,6 @@ direct_dependencies:
 - idf
 - lvgl/lvgl
 - ota
-manifest_hash: 2caa73b7abc1ab363523592c5a6fbce1e956ab1cec0ee951870d9f07f2b12590
+manifest_hash: 194f1bdece3f527cbaf49f3b0a722579f1250cef9ec94760940e12ac7f2e8e68
 target: esp32s3
 version: 3.0.0

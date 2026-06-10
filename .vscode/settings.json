@@ -13,5 +13,7 @@
     "--background-index",
     "--query-driver=**",
     "--compile-commands-dir=/Users/I051413/pProject/ESP32-TUX/build"
-  ]
+  ],
+  "idf.port": "/dev/tty.usbmodem20233401",
+  "idf.flashType": "UART"
 }

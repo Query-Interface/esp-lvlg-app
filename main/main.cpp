@@ -192,23 +192,23 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         is_wifi_connected = false;
         ESP_LOGW(TAG,"IP_EVENT_STA_LOST_IP");
     }
-    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_START) {
+    else if (event_base == NETWORK_PROV_EVENT && event_id == NETWORK_PROV_START) {
         ESP_LOGW(TAG,"WIFI_PROV_START");
     }
-    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_CRED_RECV) {
+    else if (event_base == NETWORK_PROV_EVENT && event_id == NETWORK_PROV_WIFI_CRED_RECV) {
         ESP_LOGW(TAG,"WIFI_PROV_CRED_RECV");
     }
-    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_CRED_FAIL) {
+    else if (event_base == NETWORK_PROV_EVENT && event_id == NETWORK_PROV_WIFI_CRED_FAIL) {
         ESP_LOGW(TAG,"WIFI_PROV_CRED_FAIL");
     }
-    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_CRED_SUCCESS) {
+    else if (event_base == NETWORK_PROV_EVENT && event_id == NETWORK_PROV_WIFI_CRED_SUCCESS) {
         ESP_LOGW(TAG,"WIFI_PROV_CRED_SUCCESS");
         // FIXME Refresh IP details once provision is successfull
     }
-    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_END) {
+    else if (event_base == NETWORK_PROV_EVENT && event_id == NETWORK_PROV_END) {
         ESP_LOGW(TAG,"WIFI_PROV_END");
     }
-    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_SHOWQR) {
+    else if (event_base == NETWORK_PROV_EVENT && event_id == WIFI_PROV_SHOWQR) {
         ESP_LOGW(TAG,"WIFI_PROV_SHOWQR");
         strcpy(qr_payload,(char*)event_data);   // Add qr payload to the variable
     }
@@ -283,7 +283,7 @@ extern "C" void app_main(void)
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL));
     
     /* Events related to provisioning */
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_PROV_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(NETWORK_PROV_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
 
     // TUX EVENTS
     ESP_ERROR_CHECK(esp_event_handler_instance_register(TUX_EVENTS, ESP_EVENT_ANY_ID, tux_event_handler, NULL, NULL));

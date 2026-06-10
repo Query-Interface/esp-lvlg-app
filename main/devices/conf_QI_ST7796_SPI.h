@@ -1,3 +1,5 @@
+#include <LovyanGFX.hpp>
+
 //#define TOUCH_ENABLED
 //#define SD_ENABLED
 #define SHARED_SPI
