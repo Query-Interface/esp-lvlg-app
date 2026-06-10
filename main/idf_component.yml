@@ -1,6 +1,8 @@
 ## IDF Component Manager Manifest File
 dependencies:
-  espressif/fmt: "v11.0.1"
+  espressif/fmt: "11.0.1"
+  espressif/cjson: "~1.7.19"
+  espressif/network_provisioning: "1.2.4"
   ## Required IDF version
   idf:
     version: "6.0.1"
@@ -16,3 +18,15 @@ dependencies:
   #   # `public` flag doesn't have an effect dependencies of the `main` component.
   #   # All dependencies of `main` are public by default.
   #   public: true
+  LovyanGFX:
+    version: "*"
+    override_path: "../components/LovyanGFX"
+  OpenWeatherMap:
+    version: "*"
+    override_path: "../components/OpenWeatherMap"
+  ota:
+    version: "*"
+    override_path: "../components/ota"
+  SettingsConfig:
+    version: "*"
+    override_path: "../components/SettingsConfig"

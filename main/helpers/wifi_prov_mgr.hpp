@@ -27,14 +27,14 @@ SOFTWARE.
 #include <esp_wifi.h>
 #include <esp_event.h>
 
-#include <wifi_provisioning/manager.h>
+#include <network_provisioning/manager.h>
 
 #ifdef CONFIG_PROV_TRANSPORT_BLE
-#include <wifi_provisioning/scheme_ble.h>
+#include <network_provisioning/scheme_ble.h>
 #endif /* CONFIG_PROV_TRANSPORT_BLE */
 
 #ifdef CONFIG_PROV_TRANSPORT_SOFTAP
-#include <wifi_provisioning/scheme_softap.h>
+#include <network_provisioning/scheme_softap.h>
 #endif /* CONFIG_PROV_TRANSPORT_SOFTAP */
 
 //static const char *TAG = "WIFI_PROV";
@@ -58,12 +58,12 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 #ifdef CONFIG_RESET_PROV_MGR_ON_FAILURE
     static int retries;
 #endif
-    if (event_base == WIFI_PROV_EVENT) {
+    if (event_base == NETWORK_PROV_EVENT) {
         switch (event_id) {
-            case WIFI_PROV_START:
+            case NETWORK_PROV_START:
                 ESP_LOGI(TAG, "Provisioning started");
                 break;
-            case WIFI_PROV_CRED_RECV: {
+            case NETWORK_PROV_WIFI_CRED_RECV: {
                 wifi_sta_config_t *wifi_sta_cfg = (wifi_sta_config_t *)event_data;
                 ESP_LOGI(TAG, "Received Wi-Fi credentials"
                          "\n\tSSID     : %s\n\tPassword : %s",
@@ -72,11 +72,11 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                          //(const char *) wifi_sta_cfg->password);
                 break;
             }
-            case WIFI_PROV_CRED_FAIL: {
-                wifi_prov_sta_fail_reason_t *reason = (wifi_prov_sta_fail_reason_t *)event_data;
+            case NETWORK_PROV_WIFI_CRED_FAIL: {
+                network_prov_wifi_sta_fail_reason_t *reason = (network_prov_wifi_sta_fail_reason_t *)event_data;
                 ESP_LOGE(TAG, "Provisioning failed!\n\tReason : %s"
                          "\n\tPlease reset to factory and retry provisioning",
-                         (*reason == WIFI_PROV_STA_AUTH_ERROR) ?
+                         (*reason == NETWORK_PROV_WIFI_STA_AUTH_ERROR) ?
                          "Wi-Fi station authentication failed" : "Wi-Fi access-point not found");
 #ifdef CONFIG_RESET_PROV_MGR_ON_FAILURE
                 retries++;
@@ -88,15 +88,15 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 #endif
                 break;
             }
-            case WIFI_PROV_CRED_SUCCESS:
+            case NETWORK_PROV_WIFI_CRED_SUCCESS:
                 ESP_LOGI(TAG, "Provisioning successful");
 #ifdef CONFIG_RESET_PROV_MGR_ON_FAILURE
                 retries = 0;
 #endif
                 break;
-            case WIFI_PROV_END:
+            case NETWORK_PROV_END:
                 /* De-initialize manager once provisioning is finished */
-                wifi_prov_mgr_deinit();
+                network_prov_mgr_deinit();
                 break;
             default:
                 break;
@@ -176,7 +176,7 @@ static void wifi_prov_print_qr(const char *name, const char *pop, const char *tr
 
 
     // Trigger QR CODE event with the payload
-    ESP_ERROR_CHECK(esp_event_post(WIFI_PROV_EVENT, WIFI_PROV_SHOWQR, payload,sizeof(payload), portMAX_DELAY));  
+    ESP_ERROR_CHECK(esp_event_post(NETWORK_PROV_EVENT, WIFI_PROV_SHOWQR, payload,sizeof(payload), portMAX_DELAY));  
 
 }
 
@@ -192,7 +192,7 @@ void provision_wifi(void *param)
     esp_event_handler_instance_t prov_ip_inst;
     
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_PROV_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL,&prov_prov_inst));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(NETWORK_PROV_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL,&prov_prov_inst));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL,&prov_wifi_inst));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL,&prov_ip_inst));
 
@@ -206,14 +206,14 @@ void provision_wifi(void *param)
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
     /* Configuration for the provisioning manager */
-    wifi_prov_mgr_config_t config = {
+    network_prov_mgr_config_t config = {
         /* What is the Provisioning Scheme that we want ?
          * wifi_prov_scheme_softap or wifi_prov_scheme_ble */
 #ifdef CONFIG_PROV_TRANSPORT_BLE
-        .scheme = wifi_prov_scheme_ble,
+        .scheme = network_prov_scheme_ble,
 #endif /* CONFIG_PROV_TRANSPORT_BLE */
 #ifdef CONFIG_PROV_TRANSPORT_SOFTAP
-        .scheme = wifi_prov_scheme_softap,
+        .scheme = network_prov_scheme_softap,
 #endif /* CONFIG_PROV_TRANSPORT_SOFTAP */
 
         /* Any default scheme specific event handler that you would
@@ -225,10 +225,10 @@ void provision_wifi(void *param)
          * to take care of this automatically. This can be set to
          * WIFI_PROV_EVENT_HANDLER_NONE when using wifi_prov_scheme_softap*/
 #ifdef CONFIG_PROV_TRANSPORT_BLE
-        .scheme_event_handler = WIFI_PROV_SCHEME_BLE_EVENT_HANDLER_FREE_BTDM
+        .scheme_event_handler = NETWORK_PROV_SCHEME_BLE_EVENT_HANDLER_FREE_BTDM
 #endif /* CONFIG_PROV_TRANSPORT_BLE */
 #ifdef CONFIG_PROV_TRANSPORT_SOFTAP
-        .scheme_event_handler = WIFI_PROV_EVENT_HANDLER_NONE
+        .scheme_event_handler = NETWORK_PROV_EVENT_HANDLER_NONE
 #endif /* CONFIG_PROV_TRANSPORT_SOFTAP */
     };
 

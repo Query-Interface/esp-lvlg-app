@@ -57,6 +57,8 @@ using namespace std ;
 #include "helper_lv_fs.hpp"
 
 /********************DEVICE SELECTION ******************/
+#define CONFIG_QI_ST7796_SPI
+
 #if defined(CONFIG_TUX_DEVICE_WT32_SC01)
 /* Enable one of the devices from below (shift to bsp selection later) */
 #include "conf_WT32SCO1.h"              // WT32-SC01 (ESP32)
@@ -68,7 +70,9 @@ using namespace std ;
 #include "conf_Makerfabs_S3_STFT.h" 
 #elif defined(CONFIG_TUX_DEVICE_ESP32S335D)
 // Makerfabs ESP32S335D (ESP32-S3 + 16Bit Parellel) with SD Card, Audio support
-#include "conf_Makerfabs_S3_PTFT.h"    
+#include "conf_Makerfabs_S3_PTFT.h"
+#elif defined(CONFIG_QI_ST7796_SPI)
+#include "conf_QI_ST7796_SPI.h"
 #else
     #error Unsupported device. Configure device in menuconfig
 #endif

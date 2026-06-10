@@ -38,7 +38,7 @@ extern "C" {
      *      INCLUDES
      *********************/
 #include "lvgl.h"
-#include "../../lvgl/src/core/lv_obj.h"
+#include "core/lv_obj.h"
 
 #if TUX_USE_PANEL
 
