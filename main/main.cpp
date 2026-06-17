@@ -246,6 +246,7 @@ extern "C" void app_main(void)
 //********************** CONFIG HELPER TESTING STARTS
 
      //cfg = new SettingsConfig("/sdcard/settings.json");    // yet to test
+   /*
     cfg = new SettingsConfig("/spiffs/settings.json");
     // Save settings
     cfg->save_config();   // save default loaded settings
@@ -261,11 +262,12 @@ extern "C" void app_main(void)
     // Save settings again
     cfg->save_config();
     cfg->load_config();
-
+*/
 //******************************************** 
-    owm = new OpenWeatherMap();
+    // = new OpenWeatherMap();
 //********************** CONFIG HELPER TESTING ENDS
 
+ESP_LOGI(TAG, "Starting LCD Initialization...");
     lcd.init();         // Initialize LovyanGFX
     lcd.initDMA();      // Init DMA
     lv_init();          // Initialize lvgl
@@ -289,10 +291,14 @@ extern "C" void app_main(void)
     ESP_ERROR_CHECK(esp_event_handler_instance_register(TUX_EVENTS, ESP_EVENT_ANY_ID, tux_event_handler, NULL, NULL));
 
     // LV_FS integration & print readme.txt from the root for testing
+    ESP_LOGI(TAG, "reading readme");
     lv_print_readme_txt("F:/readme.txt");   // SPIFF / FAT
+    #if defined(SD_SUPPORTED)
     lv_print_readme_txt("S:/readme.txt");   // SDCARD
+    #endif
 
 /* Push LVGL/UI to its own UI task later*/
+ESP_LOGI(TAG, "Displaying splashscreen...");
     // Splash screen
     lvgl_acquire();
     create_splash_screen();
@@ -349,6 +355,8 @@ static void timer_datetime_callback(lv_timer_t * timer)
 
 static void timer_weather_callback(lv_timer_t * timer)
 {
+    ESP_LOGW(TAG,"Disabled weather update for now!!!");
+        return;
     if (cfg->WeatherAPIkey.empty()) {   // If API key not defined skip weather update
         ESP_LOGW(TAG,"Weather API Key not set");
         return;

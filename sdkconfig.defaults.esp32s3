@@ -6,6 +6,18 @@ CONFIG_SPIRAM=y
 CONFIG_SPIRAM_MODE_OCT=y
 CONFIG_SPIRAM_XIP_FROM_PSRAM=y
 CONFIG_SPIRAM_SPEED_80M=y
+
+# With SPIRAM_XIP_FROM_PSRAM, the flash write guard suspends both the flash
+# ICache and PSRAM cache. Any ISR that fires during a flash/SPIFFS write must
+# have its handler in IRAM, otherwise a cache fault -> panic_enable_cache ->
+# TG1WDT_SYS_RST results.
+# Root cause: UART ISR fires to drain TX FIFO (from previous log output)
+# during a SPIFFS sector erase (~200ms), while the PSRAM cache is suspended.
+CONFIG_UART_ISR_IN_IRAM=y
+CONFIG_I2C_ISR_IRAM_SAFE=y
+CONFIG_SPI_MASTER_ISR_IN_IRAM=y
+CONFIG_GPTIMER_ISR_IRAM_SAFE=y
+CONFIG_FREERTOS_IN_IRAM=y
 CONFIG_SPIRAM_MEMTEST=n
 CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
 CONFIG_ESP32S3_INSTRUCTION_CACHE_32KB=y

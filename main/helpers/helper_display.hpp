@@ -193,7 +193,7 @@ void display_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 }
 
 /* Setting up tick task for lvgl */
-static void lv_tick_task(void *arg)
+static void IRAM_ATTR lv_tick_task(void *arg)
 {
     (void)arg;
     lv_tick_inc(LV_TICK_PERIOD_MS);

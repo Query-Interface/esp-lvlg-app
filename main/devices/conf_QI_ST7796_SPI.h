@@ -1,7 +1,7 @@
 #include <LovyanGFX.hpp>
 
-//#define TOUCH_ENABLED
-//#define SD_ENABLED
+#define TOUCH_ENABLED
+//#define SD_SUPPORTED
 #define SHARED_SPI
 
 #define SPI_MODE 0
@@ -17,8 +17,16 @@
 #define TFT_RTOUCH_CS    -1
 
 // Portrait
-#define TFT_WIDTH   320 //updated
-#define TFT_HEIGHT  480 //updated
+#define TFT_WIDTH   320
+#define TFT_HEIGHT  480
+
+// GPIO_NUM_37 is SPIDQS (Data Strobe) for the octal PSRAM on ESP32-S3.
+// Configuring it as a regular GPIO breaks the PSRAM interface -> cache fault.
+// Use -1 to disable INT (FT5x06 polling mode) and leave GPIO37 as SPIDQS.
+#define TOUCH_INT   -1  // was GPIO_NUM_37 - conflicts with ESP32-S3 SPIDQS/PSRAM
+#define TOUCH_SDA   GPIO_NUM_38
+#define TOUCH_SCL   GPIO_NUM_39
+#define TOUCH_RST   GPIO_NUM_40
 
 // CF: https://github.com/lovyan03/LovyanGFX/issues/513
 
@@ -75,7 +83,7 @@ public:
       cfg.dummy_read_pixel =     8;
       cfg.dummy_read_bits  =     1;
       cfg.readable         =  true;
-      cfg.invert           = true;
+      cfg.invert           = false;
       cfg.rgb_order        = false;
       cfg.dlen_16bit       = false;
       cfg.bus_shared       = false;
@@ -97,18 +105,19 @@ public:
       auto cfg = _touch_instance.config();
 
       cfg.x_min      = 0;
-      cfg.x_max      = 319;  //updated
+      cfg.x_max      = TFT_WIDTH - 1;
       cfg.y_min      = 0;  
-      cfg.y_max      = 479;  //updated
-      cfg.pin_int    = 7;  
-      cfg.bus_shared = true;
+      cfg.y_max      = TFT_HEIGHT - 1;
+      cfg.pin_int    = TOUCH_INT;
+      cfg.pin_rst    = TOUCH_RST;
+      cfg.bus_shared = false;
       cfg.offset_rotation = 0;
 
-      cfg.i2c_port = 1;
+      cfg.i2c_port = I2C_NUM_0; //I2C_NUM_1;
       cfg.i2c_addr = 0x38;
-      cfg.pin_sda  = 6;  
-      cfg.pin_scl  = 5;  
-      cfg.freq = 400000;  
+      cfg.pin_sda  = TOUCH_SDA;
+      cfg.pin_scl  = TOUCH_SCL;
+      cfg.freq = 100000;  
 
       _touch_instance.config(cfg);
       _panel_instance.setTouch(&_touch_instance);  
