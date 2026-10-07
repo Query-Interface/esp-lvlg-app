@@ -1,7 +1,7 @@
 #include <LovyanGFX.hpp>
 
 #define TOUCH_ENABLED
-//#define SD_SUPPORTED
+#define SD_SUPPORTED
 #define SHARED_SPI
 
 #define SPI_MODE 0
@@ -24,9 +24,15 @@
 // Configuring it as a regular GPIO breaks the PSRAM interface -> cache fault.
 // Use -1 to disable INT (FT5x06 polling mode) and leave GPIO37 as SPIDQS.
 #define TOUCH_INT   -1  // was GPIO_NUM_37 - conflicts with ESP32-S3 SPIDQS/PSRAM
-#define TOUCH_SDA   GPIO_NUM_38
-#define TOUCH_SCL   GPIO_NUM_39
-#define TOUCH_RST   GPIO_NUM_40
+#define TOUCH_SDA   GPIO_NUM_8
+#define TOUCH_SCL   GPIO_NUM_9
+#define TOUCH_RST   GPIO_NUM_10
+
+#define SDSPI_HOST_ID SPI2_HOST
+#define SD_MISO GPIO_NUM_13 
+#define SD_MOSI GPIO_NUM_11
+#define SD_SCLK GPIO_NUM_12
+#define SD_CS   GPIO_NUM_17
 
 // CF: https://github.com/lovyan03/LovyanGFX/issues/513
 
@@ -86,7 +92,7 @@ public:
       cfg.invert           = false;
       cfg.rgb_order        = false;
       cfg.dlen_16bit       = false;
-      cfg.bus_shared       = false;
+      cfg.bus_shared       = true;  // shared with SPI
    
       auto lightCfg = _light_instance.config();    
       lightCfg.pin_bl = TFT_BCK_LT;   //updated  - pin back light          

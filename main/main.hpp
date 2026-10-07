@@ -57,7 +57,8 @@ using namespace std ;
 #include "helper_lv_fs.hpp"
 
 /********************DEVICE SELECTION ******************/
-#define CONFIG_QI_ST7796_SPI
+//#define CONFIG_QI_ST7796_SPI
+#define CONFIG_BD_ER_TFT035M
 
 #if defined(CONFIG_TUX_DEVICE_WT32_SC01)
 /* Enable one of the devices from below (shift to bsp selection later) */
@@ -73,6 +74,8 @@ using namespace std ;
 #include "conf_Makerfabs_S3_PTFT.h"
 #elif defined(CONFIG_QI_ST7796_SPI)
 #include "conf_QI_ST7796_SPI.h"
+#elif defined(CONFIG_BD_ER_TFT035M)
+#include "conf_BD_ER-TFTM035-6.h"
 #else
     #error Unsupported device. Configure device in menuconfig
 #endif
@@ -84,7 +87,7 @@ using namespace std ;
 /* SD Card support */
 #if defined(SD_SUPPORTED)
         // Shared SPI Bus with Display
-    #if defined(WT32_SC01) //|| defined(MAKERFAB_ESP32S3_SPI)
+    #if defined(SHARED_SPI) //|| defined(MAKERFAB_ESP32S3_SPI)
         #include "helper_storage_shared.hpp"
     #else
         // Display and SD card is not on same SPI bus

@@ -919,9 +919,9 @@ static void espwifi_event_handler(lv_event_t* e)
     if (code == LV_EVENT_CLICKED)
     {
         bool provisioned = false;
-        ESP_ERROR_CHECK(network_prov_mgr_is_wifi_provisioned(&provisioned));
+        ESP_ERROR_CHECK(wifi_prov_mgr_is_provisioned(&provisioned));
         if (provisioned) {
-            network_prov_mgr_reset_wifi_provisioning();     // reset wifi
+            wifi_prov_mgr_reset_provisioning();     // reset wifi
             
             // Reset device to start provisioning
             lv_label_set_text(lbl_wifi_status, "Wi-Fi Disconnected!");

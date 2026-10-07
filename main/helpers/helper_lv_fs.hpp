@@ -51,7 +51,7 @@ static esp_err_t lv_print_readme_txt(const char * filename)
     uint32_t read_num;
     uint8_t buf[TUX_READ_BUFF_SIZE];
     res = lv_fs_read(&f, buf, TUX_READ_BUFF_SIZE-1, &read_num);
-    if(res != LV_FS_RES_OK || read_num != TUX_READ_BUFF_SIZE-1) {
+    if(res != LV_FS_RES_OK) {
         ESP_LOGE(TAG, "Failed to read from %s", filename);
         return ESP_FAIL;
     }

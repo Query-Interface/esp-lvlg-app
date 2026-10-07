@@ -192,23 +192,23 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         is_wifi_connected = false;
         ESP_LOGW(TAG,"IP_EVENT_STA_LOST_IP");
     }
-    else if (event_base == NETWORK_PROV_EVENT && event_id == NETWORK_PROV_START) {
+    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_START) {
         ESP_LOGW(TAG,"WIFI_PROV_START");
     }
-    else if (event_base == NETWORK_PROV_EVENT && event_id == NETWORK_PROV_WIFI_CRED_RECV) {
+    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_CRED_RECV) {
         ESP_LOGW(TAG,"WIFI_PROV_CRED_RECV");
     }
-    else if (event_base == NETWORK_PROV_EVENT && event_id == NETWORK_PROV_WIFI_CRED_FAIL) {
+    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_CRED_FAIL) {
         ESP_LOGW(TAG,"WIFI_PROV_CRED_FAIL");
     }
-    else if (event_base == NETWORK_PROV_EVENT && event_id == NETWORK_PROV_WIFI_CRED_SUCCESS) {
+    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_CRED_SUCCESS) {
         ESP_LOGW(TAG,"WIFI_PROV_CRED_SUCCESS");
         // FIXME Refresh IP details once provision is successfull
     }
-    else if (event_base == NETWORK_PROV_EVENT && event_id == NETWORK_PROV_END) {
+    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_END) {
         ESP_LOGW(TAG,"WIFI_PROV_END");
     }
-    else if (event_base == NETWORK_PROV_EVENT && event_id == WIFI_PROV_SHOWQR) {
+    else if (event_base == WIFI_PROV_EVENT && event_id == WIFI_PROV_SHOWQR) {
         ESP_LOGW(TAG,"WIFI_PROV_SHOWQR");
         strcpy(qr_payload,(char*)event_data);   // Add qr payload to the variable
     }
@@ -236,13 +236,6 @@ extern "C" void app_main(void)
     // Init SPIFF - needed for lvgl images
     init_spiff();
 
-#ifdef SD_SUPPORTED
-    // Initializing SDSPI 
-    if (init_sdspi() == ESP_OK) // SD SPI
-    {
-        is_sdcard_enabled = true;
-    }
-#endif   
 //********************** CONFIG HELPER TESTING STARTS
 
      //cfg = new SettingsConfig("/sdcard/settings.json");    // yet to test
@@ -272,6 +265,8 @@ ESP_LOGI(TAG, "Starting LCD Initialization...");
     lcd.initDMA();      // Init DMA
     lv_init();          // Initialize lvgl
 
+    
+
     if (lv_display_init() != ESP_OK) // Configure LVGL
     {
         ESP_LOGE(TAG, "LVGL setup failed!!!");
@@ -285,17 +280,45 @@ ESP_LOGI(TAG, "Starting LCD Initialization...");
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL));
     
     /* Events related to provisioning */
-    ESP_ERROR_CHECK(esp_event_handler_register(NETWORK_PROV_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_PROV_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
 
     // TUX EVENTS
     ESP_ERROR_CHECK(esp_event_handler_instance_register(TUX_EVENTS, ESP_EVENT_ANY_ID, tux_event_handler, NULL, NULL));
 
+    #ifdef SD_SUPPORTED
+    // Initializing SDSPI 
+    //lvgl_acquire();
+    if (init_sdspi() == ESP_OK) // SD SPI
+    {
+        is_sdcard_enabled = true;
+        lv_print_readme_txt("S:/test.txt");   // SDCARD
+/*
+        // Diagnostic code for SD-Card
+        char letters[16];
+        lv_fs_get_letters(letters);
+        ESP_LOGI(TAG, "LVGL drives: %s", letters);
+        ESP_LOGI(TAG, "S: ready: %d", lv_fs_is_ready('S'));
+
+        lv_fs_file_t f;
+        lv_fs_res_t res = lv_fs_open(&f, "S:/test.txt", LV_FS_MODE_RD);
+        if (res == LV_FS_RES_OK) {
+            char buf[64] = {0};
+            uint32_t n;
+            lv_fs_read(&f, buf, sizeof(buf) - 1, &n);
+            ESP_LOGI(TAG, "Read %lu bytes: %s", n, buf);
+            lv_fs_close(&f);
+        } else {
+            ESP_LOGE(TAG, "lv_fs_open failed: %d", res);
+        }
+        */
+    }
+    //lvgl_release();
+    #endif
     // LV_FS integration & print readme.txt from the root for testing
     ESP_LOGI(TAG, "reading readme");
     lv_print_readme_txt("F:/readme.txt");   // SPIFF / FAT
-    #if defined(SD_SUPPORTED)
-    lv_print_readme_txt("S:/readme.txt");   // SDCARD
-    #endif
+
+ 
 
 /* Push LVGL/UI to its own UI task later*/
 ESP_LOGI(TAG, "Displaying splashscreen...");

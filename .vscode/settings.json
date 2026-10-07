@@ -4,7 +4,7 @@
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
   ],
-  "idf.currentSetup": "/Users/I051413/.espressif/v6.0.1/esp-idf",
+  "idf.currentSetup": "/Users/I051413/.espressif/v5.5.4/esp-idf",
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32s3"
   },
@@ -14,6 +14,6 @@
     "--query-driver=**",
     "--compile-commands-dir=/Users/I051413/pProject/ESP32-TUX/build"
   ],
-  "idf.port": "/dev/tty.usbmodem11101",
+  "idf.port": "/dev/tty.usbmodem1401",
   "idf.flashType": "UART"
 }

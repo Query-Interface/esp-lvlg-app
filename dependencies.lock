@@ -2,19 +2,19 @@ dependencies:
   LovyanGFX:
     dependencies: []
     source:
-      path: components/LovyanGFX
+      path: /Users/I051413/pProject/ESP32-TUX/components/LovyanGFX
       type: local
     version: '*'
   OpenWeatherMap:
     dependencies: []
     source:
-      path: components/OpenWeatherMap
+      path: /Users/I051413/pProject/ESP32-TUX/components/OpenWeatherMap
       type: local
     version: '*'
   SettingsConfig:
     dependencies: []
     source:
-      path: components/SettingsConfig
+      path: /Users/I051413/pProject/ESP32-TUX/components/SettingsConfig
       type: local
     version: '*'
   espressif/cjson:
@@ -37,26 +37,10 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 11.0.1
-  espressif/network_provisioning:
-    component_hash: 72d27784e3daf807418a34fb00be136ec50c6db49d989ce981d22e031fc0e7f8
-    dependencies:
-    - name: espressif/cjson
-      registry_url: https://components.espressif.com
-      require: private
-      rules:
-      - if: idf_version >= 6.0
-      version: ^1.7.19
-    - name: idf
-      require: private
-      version: '>=5.1'
-    source:
-      registry_url: https://components.espressif.com/
-      type: service
-    version: 1.2.4
   idf:
     source:
       type: idf
-    version: 6.0.1
+    version: 5.5.4
   lvgl/lvgl:
     component_hash: d7c1ac037ae6e85d94897f807d6e7ba0946a83e720074fc95a4f6241da9f9f53
     dependencies: []
@@ -67,7 +51,7 @@ dependencies:
   ota:
     dependencies: []
     source:
-      path: components/ota
+      path: /Users/I051413/pProject/ESP32-TUX/components/ota
       type: local
     version: '*'
 direct_dependencies:
@@ -76,10 +60,9 @@ direct_dependencies:
 - SettingsConfig
 - espressif/cjson
 - espressif/fmt
-- espressif/network_provisioning
 - idf
 - lvgl/lvgl
 - ota
-manifest_hash: 194f1bdece3f527cbaf49f3b0a722579f1250cef9ec94760940e12ac7f2e8e68
+manifest_hash: 18c2699e7e9db8d9169f9d0d1671a03704d4f79e6f8b8e5dadcd825552ad7eb0
 target: esp32s3
-version: 3.0.0
+version: 2.0.0
