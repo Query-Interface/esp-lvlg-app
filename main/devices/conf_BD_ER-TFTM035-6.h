@@ -1,10 +1,12 @@
-// SD card Working / enable it below
 #define BD_ER_TFT035M
 #define TOUCH_ENABLED
 #define SD_SUPPORTED
 
 #define LGFX_USE_V1
 #include <LovyanGFX.hpp>
+
+// Configuration file for LCD Buydipsplay panel: ER-TFT035M-06: https://www.buydisplay.com/lcd-3-5-inch-320x480-tft-display-module-optl-touch-screen-w-breakout-board?srsltid=AU7gw4URbIg8WaY9pRf08FmAh6SAMJYtrgrw9zXEncTlW2Cr_izYZ_OW
+// 8 bit parallel with capacitative touch
 
 // SD CARD - SPI
 #define SDSPI_HOST_ID SPI2_HOST
@@ -20,10 +22,8 @@
 #define LCD_DC_RS     21
 #define LCD_BL        9
 
-// GPIO_NUM_37 is SPIDQS (Data Strobe) for the octal PSRAM on ESP32-S3.
-// Configuring it as a regular GPIO breaks the PSRAM interface -> cache fault.
 // Use -1 to disable INT (FT5x06 polling mode) and leave GPIO37 as SPIDQS.
-#define TOUCH_INT   GPIO_NUM_40  // was GPIO_NUM_37 - conflicts with ESP32-S3 SPIDQS/PSRAM. // => LCD PIN 39
+#define TOUCH_INT   GPIO_NUM_40  // => LCD PIN 39
 #define TOUCH_SDA   GPIO_NUM_38
 #define TOUCH_SCL   GPIO_NUM_39
 #define TOUCH_RST   -1 //GPIO_NUM_45
@@ -44,31 +44,31 @@ public:
   {
     {
       auto cfg = _bus_instance.config();
-      cfg.freq_write = 40000000;    
-      cfg.pin_wr = LCD_WR; //47            
-      cfg.pin_rd = LCD_RD;     //-1        
-      cfg.pin_rs = LCD_DC_RS; //0;              
+      cfg.freq_write = 40000000;
+      cfg.pin_wr = LCD_WR;
+      cfg.pin_rd = LCD_RD;
+      cfg.pin_rs = LCD_DC_RS;
 
       // LCD data interface, 8bit MCU (8080)
-      cfg.pin_d0 = 1;              
-      cfg.pin_d1 = 2;             
-      cfg.pin_d2 = 3;              
-      cfg.pin_d3 = 4;              
-      cfg.pin_d4 = 5; //18;             
-      cfg.pin_d5 = 6; //17;             
-      cfg.pin_d6 = 7; //16;             
-      cfg.pin_d7 = 8; //15;             
+      cfg.pin_d0 = 1;
+      cfg.pin_d1 = 2;
+      cfg.pin_d2 = 3;
+      cfg.pin_d3 = 4;
+      cfg.pin_d4 = 5;
+      cfg.pin_d5 = 6;
+      cfg.pin_d6 = 7;
+      cfg.pin_d7 = 8;
 
-      _bus_instance.config(cfg);   
-      _panel_instance.setBus(&_bus_instance);      
+      _bus_instance.config(cfg);
+      _panel_instance.setBus(&_bus_instance);
     }
 
-    { 
-      auto cfg = _panel_instance.config();    
+    {
+      auto cfg = _panel_instance.config();
 
-      cfg.pin_cs           =    LCD_CS; //-1;  
-      cfg.pin_rst          =    LCD_RESET;  
-      cfg.pin_busy         =    -1; 
+      cfg.pin_cs           =    LCD_CS; 
+      cfg.pin_rst          =    LCD_RESET;
+      cfg.pin_busy         =    -1;
 
       cfg.panel_width      =   TFT_WIDTH;
       cfg.panel_height     =   TFT_HEIGHT;
@@ -89,13 +89,13 @@ public:
     {
       auto cfg = _light_instance.config();    
 
-      cfg.pin_bl = LCD_BL; //45;              
-      cfg.invert = false;           
-      cfg.freq   = 44100;           
-      cfg.pwm_channel = 7;          
+      cfg.pin_bl = LCD_BL;           
+      cfg.invert = false;
+      cfg.freq   = 44100;
+      cfg.pwm_channel = 7;
 
       _light_instance.config(cfg);
-      _panel_instance.setLight(&_light_instance);  
+      _panel_instance.setLight(&_light_instance);
     }
 #ifdef TOUCH_ENABLED
     { 
@@ -103,7 +103,7 @@ public:
 
       cfg.x_min      = 0;
       cfg.x_max      = TFT_WIDTH - 1;
-      cfg.y_min      = 0;  
+      cfg.y_min      = 0;
       cfg.y_max      = TFT_HEIGHT - 1;
       cfg.pin_int    = TOUCH_INT;
       cfg.pin_rst    = TOUCH_RST;
@@ -114,7 +114,7 @@ public:
       cfg.i2c_addr = 0x38;
       cfg.pin_sda  = TOUCH_SDA;  // => LCD PIN 31
       cfg.pin_scl  = TOUCH_SCL;  // => LCD PIN 30
-      cfg.freq = 400000; //400000;
+      cfg.freq = 400000;
 
       _touch_instance.config(cfg);
       _panel_instance.setTouch(&_touch_instance);
