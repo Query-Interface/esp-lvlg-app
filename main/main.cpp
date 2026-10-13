@@ -370,7 +370,9 @@ ESP_LOGI(TAG, "Displaying splashscreen...");
         ESP_LOGW(TAG, "WiFi init not done after 5s, starting audio anyway");
     }
 
+    #ifdef ENABLE_AUDIO
     audio_start();
+    #endif
     xTaskCreate(heap_monitor_task, "heap_mon", 3072, NULL, 1, NULL);
     ESP_LOGI(TAG, "[APP] Free memory: %" PRIu32 " bytes", esp_get_free_heap_size());
 
@@ -504,6 +506,7 @@ static string device_info()
     return s_chip_info;
 }
 
+#ifdef ENABLE_AUDIO
 
 static esp_err_t i2s_init(void)
 {
@@ -608,3 +611,5 @@ static void sd_read_test_task(void *arg)
       fclose(f);
       vTaskDelete(NULL);
 }
+
+#endif

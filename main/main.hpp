@@ -59,6 +59,7 @@ using namespace std ;
 /********************DEVICE SELECTION ******************/
 //#define CONFIG_QI_ST7796_SPI
 #define CONFIG_BD_ER_TFT035M
+//#define ENABLE_AUDIO
 
 #if defined(CONFIG_TUX_DEVICE_WT32_SC01)
 /* Enable one of the devices from below (shift to bsp selection later) */
@@ -114,7 +115,9 @@ static void lv_update_battery(uint batval);
 static void tux_ui_change_cb(void * s, lv_msg_t *m);
 
 static string device_info();
+#ifdef ENABLE_AUDIO
 static void audio_start(void);
+#endif
 
 static bool is_wifi_provisioned = false;
 static bool is_wifi_connected = false;
