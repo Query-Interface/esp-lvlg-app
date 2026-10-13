@@ -88,6 +88,7 @@ bool init_sdspi()
 
     ESP_LOGI(TAG, "Initializing SD card");
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    host.max_freq_khz = 20000;
     host.slot = device_config.host_id;
 
     esp_vfs_fat_mount_config_t mount_config = 

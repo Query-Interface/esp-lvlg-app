@@ -114,6 +114,7 @@ static void lv_update_battery(uint batval);
 static void tux_ui_change_cb(void * s, lv_msg_t *m);
 
 static string device_info();
+static void audio_start(void);
 
 static bool is_wifi_provisioned = false;
 static bool is_wifi_connected = false;

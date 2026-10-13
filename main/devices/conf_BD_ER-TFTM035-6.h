@@ -28,6 +28,11 @@
 #define TOUCH_SCL   GPIO_NUM_39
 #define TOUCH_RST   -1 //GPIO_NUM_45
 
+// Audio Pins
+#define BCLK  GPIO_NUM_14
+#define LRC   GPIO_NUM_47
+#define DIN   GPIO_NUM_42
+
 // Portrait
 #define TFT_WIDTH   320
 #define TFT_HEIGHT  480

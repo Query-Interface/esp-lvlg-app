@@ -24,6 +24,9 @@ SOFTWARE.
 
 static const char *TAG = "ESP32-TUX";
 #include "main.hpp"
+#include "driver/i2s_std.h"
+#include "audio_player.h"
+#include <stdio.h>
 
 static void set_timezone()
 {
@@ -157,7 +160,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
     if (event_base == WIFI_EVENT  && event_id == WIFI_EVENT_STA_CONNECTED)
     {
         is_wifi_connected = true;
-        lv_timer_ready(timer_datetime);   // start timer
+        if (timer_datetime) lv_timer_ready(timer_datetime);   // start timer (may not exist yet)
 
         // After OTA device restart, RTC will have time but not timezone
         set_timezone();
@@ -177,7 +180,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
     {
         is_wifi_connected = true;
-        lv_timer_ready(timer_datetime);   // start timer
+        if (timer_datetime) lv_timer_ready(timer_datetime);   // start timer (may not exist yet)
 
         ESP_LOGW(TAG,"IP_EVENT_STA_GOT_IP");
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
@@ -213,6 +216,20 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         strcpy(qr_payload,(char*)event_data);   // Add qr payload to the variable
     }
 }
+
+static void heap_monitor_task(void *arg)
+  {
+      while (true) {
+          vTaskDelay(pdMS_TO_TICKS(5000));   // wait 5 s
+          ESP_LOGI(TAG, "Internal free: %u, largest: %u, min ever: %u",
+                   heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+                   heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL),
+                   heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
+      }
+  }
+
+static i2s_chan_handle_t tx;
+static int volume = 10;
 
 extern "C" void app_main(void)
 {
@@ -339,12 +356,22 @@ ESP_LOGI(TAG, "Displaying splashscreen...");
     lv_msg_send(MSG_SDCARD_STATUS,&is_sdcard_enabled);
 #endif
 
+    ESP_LOGI(TAG, "Internal free: %u, largest block: %u",
+         heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+         heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
     // Wifi Provision and connection.
-    // Use idf.py menuconfig to configure 
+    // Use idf.py menuconfig to configure
     // Use SoftAP only / BLE has some issues
     // Tuning PSRAM options visible only in IDF5, so will wait till then for BLE.
+    // WiFi starts first: its static buffers must come from internal RAM.
+    s_wifi_init_done = xSemaphoreCreateBinary();
     xTaskCreate(provision_wifi, "wifi_prov", 1024*8, NULL, 3, NULL);
+    if (xSemaphoreTake(s_wifi_init_done, pdMS_TO_TICKS(5000)) != pdTRUE) {
+        ESP_LOGW(TAG, "WiFi init not done after 5s, starting audio anyway");
+    }
 
+    audio_start();
+    xTaskCreate(heap_monitor_task, "heap_mon", 3072, NULL, 1, NULL);
     ESP_LOGI(TAG, "[APP] Free memory: %" PRIu32 " bytes", esp_get_free_heap_size());
 
     // Date/Time update timer - once per sec
@@ -352,7 +379,7 @@ ESP_LOGI(TAG, "Displaying splashscreen...");
     //lv_timer_pause(timer_datetime); // enable only when wifi is connected
 
     // Weather update timer - Once per min (60*1000) or maybe once in 10 mins (10*60*1000)
-    timer_weather = lv_timer_create(timer_weather_callback, WEATHER_UPDATE_INTERVAL,  NULL);
+   // removed: timer_weather = lv_timer_create(timer_weather_callback, WEATHER_UPDATE_INTERVAL,  NULL);
 
     //lv_timer_set_repeat_count(timer_weather,1);
     //lv_timer_pause(timer_weather);  // enable after wifi is connected
@@ -405,7 +432,7 @@ static void tux_ui_change_cb(void * s, lv_msg_t *m)
         case MSG_PAGE_HOME:
             // Update date/time and current weather
             // Date/time is updated every second anyway
-            lv_msg_send(MSG_WEATHER_CHANGED, owm);
+            //lv_msg_send(MSG_WEATHER_CHANGED, owm);
             break;
         case MSG_PAGE_REMOTE:
             // Trigger loading buttons data
@@ -475,4 +502,109 @@ static string device_info()
 
     //ESP_LOGE(TAG,"\n%s",device_info().c_str());
     return s_chip_info;
+}
+
+
+static esp_err_t i2s_init(void)
+{
+    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
+    chan_cfg.auto_clear = true;   // send silence when no data, avoids buzzing
+    ESP_ERROR_CHECK(i2s_new_channel(&chan_cfg, &tx, NULL));
+
+    i2s_std_config_t cfg = {
+        .clk_cfg  = I2S_STD_CLK_DEFAULT_CONFIG(44100),
+        .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
+        .gpio_cfg = {
+            .mclk = I2S_GPIO_UNUSED,  // MAX98357A needs no MCLK
+            .bclk = GPIO_NUM_14,
+            .ws   = GPIO_NUM_47,
+            .dout = GPIO_NUM_42,
+            .din  = I2S_GPIO_UNUSED,
+        },
+    };
+    ESP_ERROR_CHECK(i2s_channel_init_std_mode(tx, &cfg));
+    return i2s_channel_enable(tx);
+}
+
+// Called by the player when a file's sample rate / channels change
+static esp_err_t clk_set_fn(uint32_t rate, uint32_t bits_cfg, i2s_slot_mode_t ch)
+{
+    i2s_std_clk_config_t clk = I2S_STD_CLK_DEFAULT_CONFIG(rate);
+    i2s_std_slot_config_t slot = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG((i2s_data_bit_width_t)bits_cfg, ch);
+    slot.slot_mask = I2S_STD_SLOT_BOTH;   // mono files go to both L and R
+
+    i2s_channel_disable(tx);
+    i2s_channel_reconfig_std_clock(tx, &clk);
+    i2s_channel_reconfig_std_slot(tx, &slot);
+    return i2s_channel_enable(tx);
+}
+
+// Called with decoded 16-bit PCM; apply software volume here
+static esp_err_t write_fn(const void *buf, size_t len, size_t *written, uint32_t timeout_ms)
+{
+    int16_t *s = (int16_t *)buf;
+    for (size_t i = 0; i < len / 2; i++) {
+        s[i] = (int32_t)s[i] * volume / 100;
+    }
+    // The player passes pdMS_TO_TICKS(100) (ticks, = 10 at 100Hz) as "timeout_ms",
+    // which makes i2s_channel_write time out and drop samples. Block instead:
+    // the I2S DMA clock paces playback.
+    return i2s_channel_write(tx, buf, len, written, portMAX_DELAY);
+}
+
+static esp_err_t mute_fn(AUDIO_PLAYER_MUTE_SETTING setting)
+{
+    return ESP_OK;   // no hardware mute wired (see below)
+}
+
+static void sd_read_test_task(void *arg);
+
+static void audio_start(void)
+{
+    i2s_init();
+    ESP_LOGI(TAG, "i3s initialized");
+    audio_player_config_t config = {
+        .mute_fn    = mute_fn,
+        .clk_set_fn = clk_set_fn,
+        .write_fn   = write_fn,
+        .priority   = 5,
+        .coreID     = 0,   // keep audio away from the LVGL core
+    };
+    ESP_ERROR_CHECK(audio_player_new(config));
+    ESP_LOGI(TAG, "player created");
+
+    FILE *f = fopen("/sdcard/test.mp3", "rb");
+    if (f) {
+        ESP_LOGI(TAG, "start playing");
+        audio_player_play(f);   // the player closes the file when done
+    } else {
+        ESP_LOGE("audio", "Cannot open test.mp3");
+    }
+
+    //xTaskCreate(sd_read_test_task, "sd_test", 4096, NULL, 5, NULL);
+}
+
+// SD read test in its own task so app_main isn't blocked
+static void sd_read_test_task(void *arg)
+{
+    FILE *f = fopen("/sdcard/test.mp3", "rb");
+      if (!f) { ESP_LOGE(TAG, "open failed"); vTaskDelete(NULL); }
+
+      static uint8_t buf[4096];
+      size_t total = 0;
+      int64_t t0 = esp_timer_get_time();
+      ESP_LOGI(TAG, "reading test.mp3 file...");
+      while (true) {
+          size_t n = fread(buf, 1, sizeof(buf), f);
+          total += n;
+          if (n < sizeof(buf)) {
+              ESP_LOGW(TAG, "stop at offset %u after %lld ms (%s)", total,
+                       (esp_timer_get_time() - t0) / 1000,
+                       ferror(f) ? "READ ERROR" : "EOF");
+              break;
+          }
+          vTaskDelay(pdMS_TO_TICKS(100));   // ~40 KB/s, about the MP3 read rate
+      }
+      fclose(f);
+      vTaskDelete(NULL);
 }

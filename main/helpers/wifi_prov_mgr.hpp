@@ -180,6 +180,9 @@ static void wifi_prov_print_qr(const char *name, const char *pop, const char *tr
 
 }
 
+// Given once esp_wifi_init() has allocated its internal-RAM buffers
+static SemaphoreHandle_t s_wifi_init_done = NULL;
+
 void provision_wifi(void *param)
 {
     /* Initialize TCP/IP */
@@ -204,6 +207,7 @@ void provision_wifi(void *param)
 #endif /* CONFIG_PROV_TRANSPORT_SOFTAP */
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    if (s_wifi_init_done) xSemaphoreGive(s_wifi_init_done);
 
     /* Configuration for the provisioning manager */
     wifi_prov_mgr_config_t config = {

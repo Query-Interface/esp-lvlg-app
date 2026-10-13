@@ -1,4 +1,7 @@
 CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
+# Only allocations <= 4KB stay in internal RAM; larger ones (e.g. MP3 decoder)
+# go to PSRAM, leaving internal RAM for WiFi/DMA buffers.
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=4096
 
 CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
 
