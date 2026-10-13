@@ -65,7 +65,7 @@ menu "ESP32-TUX Configuration"
 
     config WALLPAPER_IMAGE
         bool
-        default y
+        default n
         prompt "Enable wallpaper image"
         help
             Enable wallpaper (background) image.

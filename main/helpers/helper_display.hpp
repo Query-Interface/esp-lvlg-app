@@ -173,23 +173,11 @@ esp_err_t lv_display_init()
 // Display callback to flush the buffer to screen
 void display_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
-    uint32_t w = (area->x2 - area->x1 + 1);
-    uint32_t h = (area->y2 - area->y1 + 1);
-
-    /* Without DMA */
-    // lcd.startWrite();
-    // lcd.setAddrWindow(area->x1, area->y1, w, h);
-    // lcd.pushPixels((uint16_t *)&color_p->full, w * h, true);
-    // lcd.endWrite();
-
-    /* With DMA */
-    // TODO: Yet to do performance test
-    lcd.startWrite();
-    lcd.setAddrWindow(area->x1, area->y1, w, h);
-    lcd.pushImageDMA(area->x1, area->y1, area->x2 - area->x1 + 1, area->y2 - area->y1 + 1, (lgfx::swap565_t *)&color_p->full);
-    lcd.endWrite();
-
-    lv_disp_flush_ready(disp);
+    if (lcd.getStartCount() == 0) lcd.startWrite();   // open once, never endWrite here
+    lcd.pushImageDMA(area->x1, area->y1,
+                     area->x2 - area->x1 + 1, area->y2 - area->y1 + 1,
+                     (lgfx::swap565_t *)&color_p->full);
+    lv_disp_flush_ready(disp);   // LVGL renders into the other buffer while DMA runs
 }
 
 /* Setting up tick task for lvgl */
